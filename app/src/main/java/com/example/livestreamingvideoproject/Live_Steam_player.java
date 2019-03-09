@@ -1,5 +1,6 @@
 package com.example.livestreamingvideoproject;
 
+import android.content.Intent;
 import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Bundle;
@@ -9,6 +10,7 @@ import android.view.Gravity;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.ViewGroup.LayoutParams;
+import android.view.WindowManager;
 import android.widget.Toast;
 
 import org.videolan.libvlc.IVLCVout;
@@ -19,9 +21,9 @@ import org.videolan.libvlc.MediaPlayer;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity implements IVLCVout.Callback  {
-    public final static String TAG = "MainActivity";
-    private String mFilePath;
+public class Live_Steam_player extends AppCompatActivity implements IVLCVout.Callback  {
+    public final static String TAG = "Live_Steam_player";
+    private String get_stream_url;
     private SurfaceView mSurface;
     private SurfaceHolder holder;
     private LibVLC libvlc;
@@ -32,13 +34,13 @@ public class MainActivity extends AppCompatActivity implements IVLCVout.Callback
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        mFilePath = "rtmp://54.173.3.60/live/imad";
-
-        Log.d(TAG, "Playing: " + mFilePath);
+        this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        Intent intent = getIntent();
+        Bundle bd = intent.getExtras();
+        get_stream_url = (String) bd.get("id");
+        Log.d(TAG, "Playing: " + get_stream_url);
         mSurface = (SurfaceView) findViewById(R.id.surface);
         holder = mSurface.getHolder();
-
     }
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
@@ -49,7 +51,7 @@ public class MainActivity extends AppCompatActivity implements IVLCVout.Callback
     @Override
     protected void onResume() {
         super.onResume();
-        createPlayer(mFilePath);
+        createPlayer(get_stream_url);
     }
 
     @Override
@@ -57,13 +59,11 @@ public class MainActivity extends AppCompatActivity implements IVLCVout.Callback
         super.onPause();
         releasePlayer();
     }
-
     @Override
     protected void onDestroy() {
         super.onDestroy();
         releasePlayer();
     }
-
     private void setSize(int width, int height) {
         mVideoWidth = width;
         mVideoHeight = height;
@@ -117,8 +117,8 @@ public class MainActivity extends AppCompatActivity implements IVLCVout.Callback
             // TODO: make this more robust, and sync with audio demo
             ArrayList<String> options = new ArrayList<String>();
             //options.add("--subsdec-encoding <encoding>");
-            Toast.makeText(this, "Play_video!", Toast
-                    .LENGTH_LONG).show();
+//            Toast.makeText(this, "Play_video!", Toast
+//                    .LENGTH_LONG).show();
             options.add("--aout=opensles");
             options.add("--audio-time-stretch"); // time stretching
             options.add("-vvv"); // verbosity
@@ -140,7 +140,7 @@ public class MainActivity extends AppCompatActivity implements IVLCVout.Callback
             mMediaPlayer.setMedia(m);
             mMediaPlayer.play();
         } catch (Exception e) {
-            Toast.makeText(this, "Error in creating player!", Toast
+            Toast.makeText(this, "reopen this lecture", Toast
                     .LENGTH_LONG).show();
         }
     }
@@ -160,9 +160,6 @@ public class MainActivity extends AppCompatActivity implements IVLCVout.Callback
         mVideoHeight = 0;
     }
 
-    /**
-     * Registering callbacks
-     */
     private MediaPlayer.EventListener mPlayerListener = new MyPlayerListener(this);
 
     @Override
@@ -170,7 +167,6 @@ public class MainActivity extends AppCompatActivity implements IVLCVout.Callback
         if (width * height == 0)
             return;
 
-        // store video size
         mVideoWidth = width;
         mVideoHeight = height;
         setSize(mVideoWidth, mVideoHeight);
@@ -194,15 +190,15 @@ public class MainActivity extends AppCompatActivity implements IVLCVout.Callback
     }
 
     private static class MyPlayerListener implements MediaPlayer.EventListener {
-        private WeakReference<MainActivity> mOwner;
+        private WeakReference<Live_Steam_player> mOwner;
 
-        public MyPlayerListener(MainActivity owner) {
-            mOwner = new WeakReference<MainActivity>(owner);
+        public MyPlayerListener(Live_Steam_player owner) {
+            mOwner = new WeakReference<Live_Steam_player>(owner);
         }
 
         @Override
         public void onEvent(MediaPlayer.Event event) {
-            MainActivity player = mOwner.get();
+            Live_Steam_player player = mOwner.get();
 
             switch (event.type) {
                 case MediaPlayer.Event.EndReached:
